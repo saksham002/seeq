@@ -197,6 +197,9 @@
     color: var(--muted); font-size: 0.88rem; overflow-wrap: anywhere;
   }
 </style>
+<link rel="stylesheet" href="static/rollouts/rollouts.css">
+<script defer src="static/rollouts/data.js"></script>
+<script defer src="static/rollouts/player.js"></script>
 </head>
 <body>
 
@@ -269,49 +272,35 @@
   <div class="text">
     <h2>Policy steering on real-world tasks</h2>
     <p class="lead">Each pair compares π<sub>0.5</sub>, fine-tuned on the target-task data, with the same policy steered
-      by SeeQ using best-of-N action selection. Both use the same policy weights, scene, and task instruction.</p>
+      by SeeQ using best-of-N action selection. Both use the same policy weights, scene, and task instruction.
+      Each row pairs BC and SeeQ rollouts;
+      SeeQ’s predicted subtask and value follow its video. Use the shared controls to play or seek a pair.</p>
   </div>
   <div class="media">
-    <article class="task">
-      <div class="task-head"><h3>shirt-hang</h3><span class="score">10/24 base &rarr; <b>22/24</b> with SeeQ · RaC data, 386 training episodes</span></div>
-      <div class="pair">
-        <div class="slot"><div class="tag">π<sub>0.5</sub> base policy</div><div class="frame"><video muted loop playsinline controls preload="metadata" src="static/videos/shirt_hang_base.mp4"></video><div class="empty">static/videos/shirt_hang_base.mp4</div></div></div>
-        <div class="slot seeq"><div class="tag">π<sub>0.5</sub> + SeeQ</div><div class="frame"><video muted loop playsinline controls preload="metadata" src="static/videos/shirt_hang_seeq.mp4"></video><div class="empty">static/videos/shirt_hang_seeq.mp4</div></div></div>
-      </div>
+    <article class="task" id="shirt_hang">
+      <div class="task-head"><h3>Hang a shirt</h3><span class="score">10/24 base &rarr; <b>22/24</b> with SeeQ · RaC data, 386 training episodes</span></div>
+      <div class="rollout-pairs"></div>
       <p class="caption">Remove a hanger from a rod, insert it into both sleeves of a T-shirt, and hang the shirt back
-        on the rod. Guiding the hanger into each sleeve requires precise positioning and coordination between the arms.
-        <span class="todo">[Describe the base policy's failure mode in the left clip and how SeeQ's action selection avoids it.]</span></p>
+        on the rod. Guiding the hanger into each sleeve requires precise positioning and coordination between the arms.</p>
     </article>
-    <article class="task">
-      <div class="task-head"><h3>lid-sealing</h3><span class="score">10/24 base &rarr; <b>15/24</b> with SeeQ · RaC data, 447 training episodes</span></div>
-      <div class="pair">
-        <div class="slot"><div class="tag">π<sub>0.5</sub> base policy</div><div class="frame"><video muted loop playsinline controls preload="metadata" src="static/videos/lid_sealing_base.mp4"></video><div class="empty">static/videos/lid_sealing_base.mp4</div></div></div>
-        <div class="slot seeq"><div class="tag">π<sub>0.5</sub> + SeeQ</div><div class="frame"><video muted loop playsinline controls preload="metadata" src="static/videos/lid_sealing_seeq.mp4"></video><div class="empty">static/videos/lid_sealing_seeq.mp4</div></div></div>
-      </div>
+    <article class="task" id="lid_sealing">
+      <div class="task-head"><h3>Seal a container with a lid</h3><span class="score">10/24 base &rarr; <b>15/24</b> with SeeQ · RaC data, 447 training episodes</span></div>
+      <div class="rollout-pairs"></div>
       <p class="caption">Pick up a food-storage container lid, place it on the container, and close all four latching
-        flaps. The lid must align precisely with the container rim.
-        <span class="todo">[Describe the base policy's failure mode in the left clip and how SeeQ's action selection avoids it.]</span></p>
+        flaps. The lid must align precisely with the container rim.</p>
     </article>
-    <article class="task">
-      <div class="task-head"><h3>packing</h3><span class="score">10/24 base &rarr; <b>17/24</b> with SeeQ · teleoperation data, 473 training episodes</span></div>
-      <div class="pair">
-        <div class="slot"><div class="tag">π<sub>0.5</sub> base policy</div><div class="frame"><video muted loop playsinline controls preload="metadata" src="static/videos/packing_base.mp4"></video><div class="empty">static/videos/packing_base.mp4</div></div></div>
-        <div class="slot seeq"><div class="tag">π<sub>0.5</sub> + SeeQ</div><div class="frame"><video muted loop playsinline controls preload="metadata" src="static/videos/packing_seeq.mp4"></video><div class="empty">static/videos/packing_seeq.mp4</div></div></div>
-      </div>
+    <article class="task" id="packing">
+      <div class="task-head"><h3>Pack items into a box</h3><span class="score">10/24 base &rarr; <b>17/24</b> with SeeQ · teleoperation data, 473 training episodes</span></div>
+      <div class="rollout-pairs"></div>
       <p class="caption">Pack grocery items that vary in shape, size, and deformability into boxes. Instructions
         vary across episodes, specifying which objects to pack and where each should go. When an object starts on
-        the opposite side from its target box, the robot must pass it between arms.
-        <span class="todo">[Describe the base policy's failure mode in the left clip and how SeeQ's action selection avoids it.]</span></p>
+        the opposite side from its target box, the robot must pass it between arms.</p>
     </article>
-    <article class="task">
-      <div class="task-head"><h3>lego-disassembly</h3><span class="score">5/24 base &rarr; <b>10/24</b> with SeeQ · teleoperation data, 97 training episodes</span></div>
-      <div class="pair">
-        <div class="slot"><div class="tag">π<sub>0.5</sub> base policy</div><div class="frame"><video muted loop playsinline controls preload="metadata" src="static/videos/lego_disassembly_base.mp4"></video><div class="empty">static/videos/lego_disassembly_base.mp4</div></div></div>
-        <div class="slot seeq"><div class="tag">π<sub>0.5</sub> + SeeQ</div><div class="frame"><video muted loop playsinline controls preload="metadata" src="static/videos/lego_disassembly_seeq.mp4"></video><div class="empty">static/videos/lego_disassembly_seeq.mp4</div></div></div>
-      </div>
+    <article class="task" id="lego">
+      <div class="task-head"><h3>Take apart and sort Lego blocks</h3><span class="score">5/24 base &rarr; <b>10/24</b> with SeeQ · teleoperation data, 97 training episodes</span></div>
+      <div class="rollout-pairs"></div>
       <p class="caption">Separate assembled Lego blocks of different colors and place each in a tray of the same color.
-        All 97 training episodes start from the same block configuration, so the dataset covers a narrow range of states.
-        <span class="todo">[Describe the base policy's failure mode in the left clip and how SeeQ's action selection avoids it.]</span></p>
+        All 97 training episodes start from the same block configuration, so the dataset covers a narrow range of states.</p>
     </article>
   </div>
 </section>
