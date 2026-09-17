@@ -81,31 +81,14 @@ function makeRow(task, pair) {
   element.querySelector(".seeq-column .video-shell").append(seeq);
   const videos = [bc, seeq];
   const durations = [pair.bc.duration, pair.seeq.duration];
-  const duration = Math.max(...durations);
   const master = durations[0] >= durations[1] ? bc : seeq;
   const prediction = element.querySelector(".subtask-text");
   const status = element.querySelector(".playback-status");
   const drawChart = makeChart(element.querySelector(".chart-column"), pair.seeq);
-  const readiness = [null, null];
-  let frame = 0, playing = false, position = 0, generation = 0;
+  let frame = 0, playing = false, generation = 0;
 
-  function loadVideo(index) {
-    const video = videos[index];
-    if (video.readyState >= 2) return Promise.resolve();
-    if (readiness[index] === null) {
-      readiness[index] = new Promise((resolve, reject) => {
-        video.addEventListener("loadeddata", resolve, { once: true });
-        video.addEventListener("error", () => reject(new Error(`Could not load ${video.src}`)), { once: true });
-        video.preload = "auto";
-        video.load();
-      });
-    }
-    return readiness[index];
-  }
-
-  function render(time) {
-    position = time;
-    const seeqTime = Math.min(time, pair.seeq.duration);
+  function render() {
+    const seeqTime = seeq.currentTime;
     let sample = null;
     for (const candidate of pair.seeq.samples) {
       if (candidate.time > seeqTime) break;
@@ -117,13 +100,33 @@ function makeRow(task, pair) {
 
   function tick() {
     if (!playing) return;
+    if (videos.some((video) => video.error)) {
+      pause();
+      status.textContent = "The video could not load. Reload the page to try again.";
+      return;
+    }
     const time = master.currentTime;
-    videos.forEach((video, index) => {
-      if (!video.seeking && time < durations[index] && Math.abs(video.currentTime - time) > 0.18) {
-        video.currentTime = time;
+    const activeVideos = videos.filter((video) => !video.ended);
+    const buffering = activeVideos.some((video) => video.readyState < 3 || video.seeking);
+    activeVideos.forEach((video) => {
+      // Keep the buffering video loading while holding its partner at the current frame.
+      if (buffering && video.readyState >= 3 && !video.seeking) {
+        video.pause();
+      } else {
+        // Correct drift gradually: seeking a playing video can trap it in a rewind loop.
+        video.playbackRate = Math.max(0.9, Math.min(1.1, 1 + (time - video.currentTime) * 0.5));
+        if (video.paused) {
+          const attempt = generation;
+          video.play().catch((error) => {
+            if (attempt !== generation || error.name === "AbortError") return;
+            pause();
+            status.textContent = "The video could not play. Reload the page to try again.";
+            console.error(error);
+          });
+        }
       }
     });
-    render(time);
+    render();
     frame = requestAnimationFrame(tick);
   }
 
@@ -135,48 +138,26 @@ function makeRow(task, pair) {
       video.preload = "none";
     });
     cancelAnimationFrame(frame);
+    render();
   }
 
-  function seek(time) {
-    render(time);
-    videos.forEach((video, index) => {
-      if (video.readyState >= 2) {
-        video.currentTime = Math.min(time, durations[index]);
-      } else {
-        loadVideo(index).then(() => {
-          video.currentTime = Math.min(position, durations[index]);
-        }).catch(() => { status.textContent = "The video could not load. Reload the page to try again."; });
-      }
-    });
-  }
-
-  async function play() {
+  function play() {
     if (playing) return;
-    if (position >= duration - 0.1) seek(0);
+    if (master.ended) videos.forEach((video) => { video.currentTime = 0; });
     status.textContent = "";
     playing = true;
-    const attempt = ++generation;
-    try {
-      await Promise.all(videos.map((video, index) => position < durations[index] ? video.play() : loadVideo(index)));
-      if (attempt !== generation || !playing) return;
-      seek(position);
-      if (attempt === generation && playing) frame = requestAnimationFrame(tick);
-    } catch (error) {
-      if (attempt !== generation) return;
-      pause();
-      status.textContent = "The video could not play. Reload the page to try again.";
-      console.error(error);
-    }
+    generation++;
+    videos.forEach((video) => { video.preload = "auto"; });
+    tick();
   }
 
   master.addEventListener("ended", () => {
-    render(duration);
     pause();
     if (row.visible && !document.hidden) play();
   });
   const row = { play, pause, element, visible: false };
   rows.push(row);
-  render(0);
+  render();
   return element;
 }
 
