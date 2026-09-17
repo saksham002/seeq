@@ -19,14 +19,24 @@ function makeChart(container, recording) {
   const left = 118, right = 696, top = 28, bottom = 340;
   const samples = recording.samples;
   const clipId = `value-plot-${recording.src.replace(/\W/g, "_")}`;
-  const x = (time) => left + Math.max(0, Math.min(recording.duration, time)) / recording.duration * (right - left);
-  const y = (value) => bottom - value * (bottom - top);
+  const elapsedSeconds = (time) => {
+    const wallTime = time * recording.speed + recording.trimStart;
+    const inferenceSeconds = recording.inferenceIntervals.reduce((total, [start, end]) =>
+      total + Math.max(0, Math.min(wallTime, end) - Math.max(0, start)), 0);
+    return wallTime - inferenceSeconds;
+  };
+  const startSeconds = elapsedSeconds(0);
+  const endSeconds = elapsedSeconds(recording.duration);
+  const x = (seconds) => left + Math.max(0, Math.min(endSeconds - startSeconds, seconds - startSeconds))
+    / (endSeconds - startSeconds) * (right - left);
+  const boundedValue = (value) => Math.max(0, Math.min(1, value));
+  const y = (value) => bottom - boundedValue(value) * (bottom - top);
   let path = "", connected = false;
   for (let index = 0; index < samples.length; index++) {
     const sample = samples[index];
     if (sample.time < 0 && index + 1 < samples.length && samples[index + 1].time < 0) continue;
     if (sample.value === null) { connected = false; continue; }
-    path += `${connected ? "L" : "M"}${x(sample.time).toFixed(2)},${y(sample.value).toFixed(2)} `;
+    path += `${connected ? "L" : "M"}${x(elapsedSeconds(sample.time)).toFixed(2)},${y(sample.value).toFixed(2)} `;
     connected = true;
   }
   const horizontal = Array.from({ length: 5 }, (_, index) => {
@@ -34,21 +44,19 @@ function makeChart(container, recording) {
     return `<line class="grid-line" x1="${left}" x2="${right}" y1="${y(value)}" y2="${y(value)}" stroke="#e2e9e4"/>
       <text x="${left - 12}" y="${y(value) + 6}" text-anchor="end">${value}</text>`;
   }).join("");
-  const startSeconds = recording.trimStart;
-  const endSeconds = startSeconds + recording.duration * recording.speed;
   const rawInterval = (endSeconds - startSeconds) / 6;
   const magnitude = 10 ** Math.floor(Math.log10(rawInterval));
   const interval = [1, 2, 2.5, 5, 10].find((factor) => factor * magnitude >= rawInterval) * magnitude;
   const firstTick = Math.ceil(startSeconds / interval) * interval;
   const ticks = Array.from({ length: Math.floor((endSeconds - firstTick) / interval) + 1 }, (_, index) => {
     const seconds = firstTick + index * interval;
-    return `<text x="${x((seconds - startSeconds) / recording.speed)}" y="${bottom + 27}" text-anchor="middle">${seconds}</text>`;
+    return `<text x="${x(seconds)}" y="${bottom + 27}" text-anchor="middle">${seconds}</text>`;
   }).join("");
-  container.innerHTML = `<svg class="chart" viewBox="0 0 ${width} ${height}" role="img" aria-label="SeeQ value over elapsed seconds before video speedup">
+  container.innerHTML = `<svg class="chart" viewBox="0 0 ${width} ${height}" role="img" aria-label="SeeQ value over real elapsed seconds excluding inference latency">
     <defs><clipPath id="${clipId}"><rect x="${left}" y="${top}" width="${right - left}" height="${bottom - top}"/></clipPath></defs>
     ${horizontal}${ticks}
     <text class="axis-label" transform="translate(20 184) rotate(-90)" text-anchor="middle">Value</text>
-    <text class="axis-label" x="407" y="391" text-anchor="middle">Time (s)</text>
+    <text class="axis-label" x="407" y="391" text-anchor="middle">Time without inference (s)</text>
     <g clip-path="url(#${clipId})">
     <path class="value-path" d="${path}" fill="none" stroke="#6eb8a8" stroke-width="2.4" stroke-linejoin="round"/>
     <line class="cursor" x1="${left}" x2="${left}" y1="${top}" y2="${bottom}" stroke="#007f70" stroke-width="1.5" stroke-dasharray="5 5"/>
@@ -59,15 +67,15 @@ function makeChart(container, recording) {
   const point = container.querySelector(".current-value");
   const readout = container.querySelector("strong");
   return (time, sample) => {
-    cursor.setAttribute("x1", x(time));
-    cursor.setAttribute("x2", x(time));
+    cursor.setAttribute("x1", x(elapsedSeconds(time)));
+    cursor.setAttribute("x2", x(elapsedSeconds(time)));
     const hasValue = sample !== null && sample.value !== null;
     point.setAttribute("visibility", hasValue ? "visible" : "hidden");
     if (hasValue) {
-      point.setAttribute("cx", x(sample.time));
+      point.setAttribute("cx", x(elapsedSeconds(sample.time)));
       point.setAttribute("cy", y(sample.value));
     }
-    readout.textContent = hasValue ? sample.value.toFixed(3) : "—";
+    readout.textContent = hasValue ? boundedValue(sample.value).toFixed(3) : "—";
   };
 }
 
