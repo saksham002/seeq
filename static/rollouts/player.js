@@ -18,10 +18,9 @@ function makeChart(container, recording) {
   const width = 720, height = 405;
   const left = 118, right = 696, top = 28, bottom = 340;
   const samples = recording.samples;
-  const maximum = Math.max(1, ...samples.filter((s) => s.value !== null).map((s) => s.value));
-  const ceiling = Math.ceil(maximum * 10) / 10;
+  const clipId = `value-plot-${recording.src.replace(/\W/g, "_")}`;
   const x = (time) => left + Math.max(0, Math.min(recording.duration, time)) / recording.duration * (right - left);
-  const y = (value) => bottom - value / ceiling * (bottom - top);
+  const y = (value) => bottom - value * (bottom - top);
   let path = "", connected = false;
   for (let index = 0; index < samples.length; index++) {
     const sample = samples[index];
@@ -31,21 +30,30 @@ function makeChart(container, recording) {
     connected = true;
   }
   const horizontal = Array.from({ length: 5 }, (_, index) => {
-    const value = index * ceiling / 4;
+    const value = index / 4;
     return `<line class="grid-line" x1="${left}" x2="${right}" y1="${y(value)}" y2="${y(value)}" stroke="#e2e9e4"/>
-      <text x="${left - 12}" y="${y(value) + 6}" text-anchor="end">${value.toFixed(2)}</text>`;
+      <text x="${left - 12}" y="${y(value) + 6}" text-anchor="end">${value}</text>`;
   }).join("");
-  const ticks = Array.from({ length: 5 }, (_, index) => {
-    const time = recording.duration * index / 4;
-    return `<text x="${x(time)}" y="${bottom + 27}" text-anchor="middle">${Math.round(time)}</text>`;
+  const startSeconds = recording.trimStart;
+  const endSeconds = startSeconds + recording.duration * recording.speed;
+  const rawInterval = (endSeconds - startSeconds) / 6;
+  const magnitude = 10 ** Math.floor(Math.log10(rawInterval));
+  const interval = [1, 2, 2.5, 5, 10].find((factor) => factor * magnitude >= rawInterval) * magnitude;
+  const firstTick = Math.ceil(startSeconds / interval) * interval;
+  const ticks = Array.from({ length: Math.floor((endSeconds - firstTick) / interval) + 1 }, (_, index) => {
+    const seconds = firstTick + index * interval;
+    return `<text x="${x((seconds - startSeconds) / recording.speed)}" y="${bottom + 27}" text-anchor="middle">${seconds}</text>`;
   }).join("");
-  container.innerHTML = `<svg class="chart" viewBox="0 0 ${width} ${height}" role="img" aria-label="SeeQ value over video time">
+  container.innerHTML = `<svg class="chart" viewBox="0 0 ${width} ${height}" role="img" aria-label="SeeQ value over elapsed seconds before video speedup">
+    <defs><clipPath id="${clipId}"><rect x="${left}" y="${top}" width="${right - left}" height="${bottom - top}"/></clipPath></defs>
     ${horizontal}${ticks}
     <text class="axis-label" transform="translate(20 184) rotate(-90)" text-anchor="middle">Value</text>
-    <text class="axis-label" x="407" y="391" text-anchor="middle">Video time (s)</text>
+    <text class="axis-label" x="407" y="391" text-anchor="middle">Time (s)</text>
+    <g clip-path="url(#${clipId})">
     <path class="value-path" d="${path}" fill="none" stroke="#6eb8a8" stroke-width="2.4" stroke-linejoin="round"/>
     <line class="cursor" x1="${left}" x2="${left}" y1="${top}" y2="${bottom}" stroke="#007f70" stroke-width="1.5" stroke-dasharray="5 5"/>
     <circle class="current-value" r="5" fill="#007f70" stroke="white" stroke-width="2" visibility="hidden"/>
+    </g>
   </svg><div class="value-readout">SeeQ value <strong>—</strong></div>`;
   const cursor = container.querySelector(".cursor");
   const point = container.querySelector(".current-value");
