@@ -197,9 +197,9 @@
     color: var(--muted); font-size: 0.88rem; overflow-wrap: anywhere;
   }
 </style>
-<link rel="stylesheet" href="static/rollouts/rollouts.css">
+<link rel="stylesheet" href="static/rollouts/rollouts.css?v=2">
 <script defer src="static/rollouts/data.js"></script>
-<script defer src="static/rollouts/player.js"></script>
+<script defer src="static/rollouts/player.js?v=2"></script>
 </head>
 <body>
 
@@ -238,7 +238,7 @@
     </div>
   </div>
 
-  <figure class="media hero-figure">
+  <figure class="text hero-figure">
     <img src="static/seeq_teaser.png" alt="SeeQ overview. Left: diverse robot data with observations, actions, sparse rewards and subtask labels. Middle: a VLM-backed Q-function pretrained to predict the subtask and its value, then fine-tuned on a downstream task. Right: at test time the policy samples action chunks and SeeQ scores each one for the predicted subtask.">
     <figcaption><b>SeeQ overview.</b> We train a generalist Q-function on diverse robot data using a pretrained
       vision-language model (VLM), then fine-tune it on a downstream task to steer a base policy at test time.
@@ -262,8 +262,7 @@
       <li>SeeQ improves best-of-N policy steering on four real-world tasks across two bimanual robot platforms.
         We initialize it from PaliGemma, pretrain it on RoboCOIN's bimanual robot data, and fine-tune it on each target
         task. Steering a fine-tuned π<sub>0.5</sub> policy increases successes on shirt-hang from 10/24 to 22/24 and
-        improves results on the other three tasks. The gains hold with both suboptimal RaC data and expert
-        demonstrations alone.</li>
+        improves results on the other three tasks.</li>
     </ol>
   </div>
 </header>
@@ -274,33 +273,32 @@
     <p class="lead">Each pair compares π<sub>0.5</sub>, fine-tuned on the target-task data, with the same policy steered
       by SeeQ using best-of-N action selection. Both use the same policy weights, scene, and task instruction.
       Each row pairs BC and SeeQ rollouts;
-      SeeQ’s predicted subtask and value follow its video. Use the shared controls to play or seek a pair.</p>
+      SeeQ’s predicted subtask and value follow its video.</p>
   </div>
   <div class="media">
     <article class="task" id="shirt_hang">
-      <div class="task-head"><h3>Hang a shirt</h3><span class="score">10/24 base &rarr; <b>22/24</b> with SeeQ · RaC data, 386 training episodes</span></div>
-      <div class="rollout-pairs"></div>
+      <div class="task-head"><h3>Hang a shirt</h3><span class="score">10/24 base &rarr; <b>22/24</b> with SeeQ</span></div>
       <p class="caption">Remove a hanger from a rod, insert it into both sleeves of a T-shirt, and hang the shirt back
         on the rod. Guiding the hanger into each sleeve requires precise positioning and coordination between the arms.</p>
+      <div class="rollout-pairs"></div>
     </article>
     <article class="task" id="lid_sealing">
-      <div class="task-head"><h3>Seal a container with a lid</h3><span class="score">10/24 base &rarr; <b>15/24</b> with SeeQ · RaC data, 447 training episodes</span></div>
-      <div class="rollout-pairs"></div>
+      <div class="task-head"><h3>Seal a container with a lid</h3><span class="score">10/24 base &rarr; <b>15/24</b> with SeeQ</span></div>
       <p class="caption">Pick up a food-storage container lid, place it on the container, and close all four latching
         flaps. The lid must align precisely with the container rim.</p>
+      <div class="rollout-pairs"></div>
     </article>
     <article class="task" id="packing">
-      <div class="task-head"><h3>Pack items into a box</h3><span class="score">9/24 base &rarr; <b>17/24</b> with SeeQ · teleoperation data, 473 training episodes</span></div>
-      <div class="rollout-pairs"></div>
+      <div class="task-head"><h3>Pack items into a box</h3><span class="score">9/24 base &rarr; <b>17/24</b> with SeeQ</span></div>
       <p class="caption">Pack grocery items that vary in shape, size, and deformability into boxes. Instructions
         vary across episodes, specifying which objects to pack and where each should go. When an object starts on
         the opposite side from its target box, the robot must pass it between arms.</p>
+      <div class="rollout-pairs"></div>
     </article>
     <article class="task" id="lego">
-      <div class="task-head"><h3>Take apart and sort Lego blocks</h3><span class="score">5/24 base &rarr; <b>10/24</b> with SeeQ · teleoperation data, 97 training episodes</span></div>
+      <div class="task-head"><h3>Take apart and sort Lego blocks</h3><span class="score">5/24 base &rarr; <b>10/24</b> with SeeQ</span></div>
+      <p class="caption">Separate assembled Lego blocks of different colors and place each in a tray of the same color.</p>
       <div class="rollout-pairs"></div>
-      <p class="caption">Separate assembled Lego blocks of different colors and place each in a tray of the same color.
-        All 97 training episodes start from the same block configuration, so the dataset covers a narrow range of states.</p>
     </article>
   </div>
 </section>
@@ -310,9 +308,6 @@
     <h2>Results</h2>
     <p class="lead">We compare successes over 24 trials for the base policy and the same policy steered by SeeQ
       using best-of-N action selection.</p>
-    <p class="lead">For shirt-hang and lid-sealing, we collect training data with RaC: the policy runs autonomously
-      until it begins to make a mistake, then a human teleoperator takes over to demonstrate corrections and recoveries.
-      For packing and lego-disassembly, the downstream data consists entirely of expert demonstrations.</p>
   </div>
 
   <div class="text results-chart">
@@ -328,10 +323,10 @@
       </div>
     </div>
     <div class="xlabels"><div></div><div class="row">
-      <div class="x">shirt-hang<small>RaC data</small></div>
-      <div class="x">lid-sealing<small>RaC data</small></div>
-      <div class="x">packing<small>teleop data</small></div>
-      <div class="x">lego-disas&shy;sembly<small>teleop data</small></div>
+      <div class="x">shirt-hang</div>
+      <div class="x">lid-sealing</div>
+      <div class="x">packing</div>
+      <div class="x">lego-disas&shy;sembly</div>
     </div></div>
   </div>
 </section>

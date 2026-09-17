@@ -1,9 +1,7 @@
 "use strict";
 
 const tasks = window.SEEQ_ROLLOUTS;
-let activeRow = null;
 const rows = [];
-const clock = (seconds) => `${Math.floor(seconds / 60)}:${String(Math.floor(seconds % 60)).padStart(2, "0")}`;
 
 function makeVideo(recording, label) {
   const video = document.createElement("video");
@@ -18,7 +16,7 @@ function makeVideo(recording, label) {
 
 function makeChart(container, recording) {
   const width = 720, height = 405;
-  const left = 95, right = 696, top = 28, bottom = 340;
+  const left = 118, right = 696, top = 28, bottom = 340;
   const samples = recording.samples;
   const maximum = Math.max(1, ...samples.filter((s) => s.value !== null).map((s) => s.value));
   const ceiling = Math.ceil(maximum * 10) / 10;
@@ -44,7 +42,7 @@ function makeChart(container, recording) {
   container.innerHTML = `<svg class="chart" viewBox="0 0 ${width} ${height}" role="img" aria-label="SeeQ value over video time">
     ${horizontal}${ticks}
     <text class="axis-label" transform="translate(20 184) rotate(-90)" text-anchor="middle">Value</text>
-    <text class="axis-label" x="383" y="391" text-anchor="middle">Video time (s)</text>
+    <text class="axis-label" x="407" y="391" text-anchor="middle">Video time (s)</text>
     <path class="value-path" d="${path}" fill="none" stroke="#6eb8a8" stroke-width="2.4" stroke-linejoin="round"/>
     <line class="cursor" x1="${left}" x2="${left}" y1="${top}" y2="${bottom}" stroke="#007f70" stroke-width="1.5" stroke-dasharray="5 5"/>
     <circle class="current-value" r="5" fill="#007f70" stroke="white" stroke-width="2" visibility="hidden"/>
@@ -73,10 +71,9 @@ function makeRow(task, pair) {
   element.innerHTML = `<div class="episode-top"><span class="episode-number">Episode ${pair.episode}</span></div>
     <div class="episode-grid">
       <div class="bc-column"><div class="video-shell"></div></div>
-      <div class="seeq-column"><div class="video-shell"></div><div class="subtask"><span class="subtask-label">Predicted subtask</span><span class="subtask-text">—</span></div></div>
+      <div class="seeq-column"><div class="video-shell"></div><div class="subtask"><span class="subtask-label">Predicted Subtask</span><span class="subtask-text">—</span></div></div>
       <div class="chart-column"></div>
     </div>
-    <div class="controls"><button class="play" type="button">Play pair</button><input class="timeline" type="range" min="0" step="0.01" value="0" aria-label="Seek ${task.title}, episode ${pair.episode}"><span class="time"></span></div>
     <p class="playback-status" role="status"></p>`;
   const bc = makeVideo(pair.bc, `BC · ${task.title} · episode ${pair.episode}`);
   const seeq = makeVideo(pair.seeq, `SeeQ · ${task.title} · episode ${pair.episode}`);
@@ -86,13 +83,9 @@ function makeRow(task, pair) {
   const durations = [pair.bc.duration, pair.seeq.duration];
   const duration = Math.max(...durations);
   const master = durations[0] >= durations[1] ? bc : seeq;
-  const button = element.querySelector(".play");
-  const timeline = element.querySelector(".timeline");
-  const timeLabel = element.querySelector(".time");
   const prediction = element.querySelector(".subtask-text");
   const status = element.querySelector(".playback-status");
   const drawChart = makeChart(element.querySelector(".chart-column"), pair.seeq);
-  timeline.max = duration;
   const readiness = [null, null];
   let frame = 0, playing = false, position = 0, generation = 0;
 
@@ -112,8 +105,6 @@ function makeRow(task, pair) {
 
   function render(time) {
     position = time;
-    timeline.value = time;
-    timeLabel.textContent = `${clock(time)} / ${clock(duration)}`;
     const seeqTime = Math.min(time, pair.seeq.duration);
     let sample = null;
     for (const candidate of pair.seeq.samples) {
@@ -144,8 +135,6 @@ function makeRow(task, pair) {
       video.preload = "none";
     });
     cancelAnimationFrame(frame);
-    button.textContent = position >= duration - 0.1 ? "Replay pair" : "Play pair";
-    button.setAttribute("aria-pressed", "false");
   }
 
   function seek(time) {
@@ -162,35 +151,30 @@ function makeRow(task, pair) {
   }
 
   async function play() {
-    if (activeRow !== null && activeRow !== row) activeRow.pause();
-    activeRow = row;
+    if (playing) return;
     if (position >= duration - 0.1) seek(0);
     status.textContent = "";
     playing = true;
-    button.textContent = "Loading…";
-    button.setAttribute("aria-pressed", "true");
     const attempt = ++generation;
     try {
       await Promise.all(videos.map((video, index) => position < durations[index] ? video.play() : loadVideo(index)));
       if (attempt !== generation || !playing) return;
       seek(position);
-      button.textContent = "Pause pair";
       if (attempt === generation && playing) frame = requestAnimationFrame(tick);
     } catch (error) {
       if (attempt !== generation) return;
       pause();
-      status.textContent = "The video could not play. Try playing the pair again.";
+      status.textContent = "The video could not play. Reload the page to try again.";
       console.error(error);
     }
   }
 
-  button.addEventListener("click", () => playing ? pause() : play());
-  timeline.addEventListener("input", () => {
+  master.addEventListener("ended", () => {
+    render(duration);
     pause();
-    seek(Number(timeline.value));
+    if (row.visible && !document.hidden) play();
   });
-  master.addEventListener("ended", () => { render(duration); pause(); });
-  const row = { pause, element };
+  const row = { play, pause, element, visible: false };
   rows.push(row);
   render(0);
   return element;
@@ -199,12 +183,33 @@ function makeRow(task, pair) {
 for (const task of tasks) {
   const section = document.getElementById(task.id);
   section.querySelector("h3").textContent = task.title;
-  section.querySelector(".rollout-pairs").innerHTML = `<p class="task-meta">${task.pairs.length} episode pairs · ${task.speed}× speed</p>
+  section.querySelector(".rollout-pairs").innerHTML = `<p class="task-meta">${task.speed}× speed</p>
     <p class="scroll-hint">Swipe across to compare both videos and the value chart.</p>
-    <div class="comparison-scroll"><div class="comparison"><div class="columns"><span>BC</span><span>SeeQ</span><span>SeeQ value</span></div></div></div>`;
+    <div class="comparison-scroll"><div class="comparison"><div class="columns"><span>BC</span><span>SeeQ</span><span>SeeQ Value</span></div></div></div>`;
   for (const pair of task.pairs) section.querySelector(".comparison").append(makeRow(task, pair));
 }
 
+const rowByElement = new Map(rows.map((row) => [row.element, row]));
+let observer;
+
+function observeRows() {
+  if (observer) observer.disconnect();
+  observer = new IntersectionObserver((entries) => {
+    for (const entry of entries) {
+      const row = rowByElement.get(entry.target);
+      row.visible = entry.isIntersecting;
+      if (row.visible && !document.hidden) row.play();
+      else row.pause();
+    }
+  }, { rootMargin: `0px 0px -${window.innerHeight / 3}px 0px`, threshold: 0 });
+  rows.forEach((row) => observer.observe(row.element));
+}
+
+observeRows();
+window.addEventListener("resize", observeRows);
 document.addEventListener("visibilitychange", () => {
-  if (document.hidden) rows.forEach((row) => row.pause());
+  rows.forEach((row) => {
+    if (row.visible && !document.hidden) row.play();
+    else row.pause();
+  });
 });
