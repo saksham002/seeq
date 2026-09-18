@@ -239,7 +239,7 @@
   </div>
 
   <figure class="text hero-figure">
-    <img src="static/seeq_teaser.png?v=293fc65b6475" alt="SeeQ overview. Left: diverse robot data with observations, actions, sparse rewards and subtask labels. Middle: a VLM-backed Q-function pretrained to predict the subtask and its value, then fine-tuned on a downstream task. Right: at test time the policy samples action chunks and SeeQ scores each one for the predicted subtask.">
+    <img src="static/seeq_teaser.png" alt="SeeQ overview. Left: diverse robot data with observations, actions, sparse rewards and subtask labels. Middle: a VLM-backed Q-function pretrained to predict the subtask and its value, then fine-tuned on a downstream task. Right: at test time the policy samples action chunks and SeeQ scores each one for the predicted subtask.">
     <figcaption><b>SeeQ overview.</b> We train a generalist Q-function on diverse robot data using a pretrained
       vision-language model (VLM), then fine-tune it on a downstream task to steer a base policy at test time.
       Temporal-difference (TD) learning estimates Q-values for the active subtask, shortening the prediction horizon.
