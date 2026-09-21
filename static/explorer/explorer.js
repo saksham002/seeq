@@ -648,6 +648,32 @@
     timelineSvg.addEventListener("pointercancel", endDrag);
     timelineSvg.addEventListener("pointerleave", () => { if (!dragging) hideHover(); });
 
+    // Deep links: "#explorer-frame-<n>" (1-based, as the badge counts) pauses on that frame and
+    // scrolls the explorer into view, both on load and when such a link is clicked.
+    function frameFromHash(hash) {
+      const match = /^#explorer-frame-(\d+)$/.exec(hash);
+      return match ? Number(match[1]) - 1 : null;
+    }
+    function jumpToFrame(frame) {
+      userPaused = true;
+      pause();
+      seek(frame);
+      mount.scrollIntoView({ block: "start" });
+    }
+    document.addEventListener("click", (event) => {
+      const link = event.target.closest("a[href^='#explorer-frame-']");
+      if (!link) return;
+      const frame = frameFromHash(link.getAttribute("href"));
+      if (frame === null) return;
+      event.preventDefault();
+      history.replaceState(null, "", link.getAttribute("href"));
+      jumpToFrame(frame);
+    });
+    window.addEventListener("hashchange", () => {
+      const frame = frameFromHash(location.hash);
+      if (frame !== null) jumpToFrame(frame);
+    });
+
     // Autoplay while the stage is on screen, unless the viewer paused it.
     const observer = new IntersectionObserver((entries) => {
       for (const entry of entries) {
@@ -671,5 +697,7 @@
     renderPlayButton();
     layoutTimeline();
     draw(0);
+    const linkedFrame = frameFromHash(location.hash);
+    if (linkedFrame !== null) jumpToFrame(linkedFrame);
   }
 })();

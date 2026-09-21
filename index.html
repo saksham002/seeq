@@ -227,7 +227,7 @@
       <span class="aff">Carnegie Mellon University</span>
     </div>
     <div class="links">
-      <a class="btn soon" href="#" aria-disabled="true" title="arXiv link to be added"><svg viewBox="0 0 24 24"><path d="M6 3h9l5 5v13H6z"/><path d="M14 3v6h6"/><path d="M9 13h7M9 17h7"/></svg>Paper</a>
+      <a class="btn" href="https://arxiv.org/abs/2609.22085"><svg viewBox="0 0 24 24"><path d="M6 3h9l5 5v13H6z"/><path d="M14 3v6h6"/><path d="M9 13h7M9 17h7"/></svg>Paper</a>
       <a class="btn" href="https://github.com/saksham002/generalist_value_functions"><svg viewBox="0 0 24 24"><path d="M8 4 3 12l5 8M16 4l5 8-5 8"/></svg>Code</a>
       <a class="btn" href="#bibtex"><svg viewBox="0 0 24 24"><path d="M5 4h14v16H5z"/><path d="M9 9h6M9 13h6"/></svg>BibTeX</a>
     </div>
@@ -319,7 +319,9 @@
       At every frame, SeeQ first decodes the active subtask in text and then scores eight action chunks sampled
       from that state by the fine-tuned π<sub>0.5</sub> policy. Pause the video or drag along the timeline to
       inspect a frame: each path shows where a candidate chunk would move the grippers over the next second,
-      and the panel ranks the candidates by Q-value.</p>
+      and the panel ranks the candidates by Q-value. For a stretch where the base policy often struggles, look at
+      frames 1258 to 1358, while the second sleeve is being hooked onto the hanger:
+      <a href="#explorer-frame-1258">jump to frame 1258</a>.</p>
     <div class="explorer-app" id="explorer-app" data-src="static/explorer/data.json">
       <p class="explorer-loading">Loading the explorer…</p>
     </div>
@@ -362,9 +364,10 @@
   <div class="text">
     <h2>BibTeX</h2>
 <pre>@article{singh2026seeq,
-  title  = {SeeQ: Training Generalist Value Functions for Long-Horizon Robotic Manipulation},
-  author = {Singh, Saksham and Hu, Zheyuan and Mark, Max Sobol and Yu, Jeffrey and Erickson, Zackory and Kumar, Aviral},
-  year   = {2026}
+  title   = {SeeQ: Training Generalist Value Functions for Long-Horizon Robotic Manipulation},
+  author  = {Singh, Saksham and Hu, Zheyuan and Mark, Max Sobol and Yu, Jeffrey and Erickson, Zackory and Kumar, Aviral},
+  journal = {arXiv preprint arXiv:2609.22085},
+  year    = {2026}
 }</pre>
   </div>
 </section>
