@@ -200,8 +200,6 @@
 <link rel="stylesheet" href="static/rollouts/rollouts.css?v=2">
 <script defer src="static/rollouts/data.js?v=2"></script>
 <script defer src="static/rollouts/player.js?v=5"></script>
-<link rel="stylesheet" href="static/explorer/explorer.css?v=1">
-<script defer src="static/explorer/explorer.js?v=1"></script>
 </head>
 <body>
 
@@ -309,26 +307,6 @@
         episode 2 uses red &rarr; green, green &rarr; blue, and blue &rarr; red (block color &rarr; tray color).</p>
       <div class="rollout-pairs"></div>
     </article>
-  </div>
-</section>
-
-<section id="explorer">
-  <div class="text">
-    <h2>Inspect SeeQ on a held-out demonstration</h2>
-    <p class="lead">This shirt-hang demonstration comes from the validation split and was never used to train SeeQ.
-      At every frame, SeeQ first decodes the active subtask in text and then scores eight action chunks sampled
-      from that state by the fine-tuned π<sub>0.5</sub> policy. Pause the video or drag along the timeline to
-      inspect a frame: each path shows where a candidate chunk would move the grippers over the next second,
-      and the panel ranks the candidates by Q-value.</p>
-  </div>
-  <div class="media">
-    <div class="explorer-app" id="explorer-app" data-src="static/explorer/data.json">
-      <p class="explorer-loading">Loading the explorer…</p>
-    </div>
-    <p class="caption">The trajectory is a held-out demonstration from the validation split. The value chart
-      compares SeeQ’s value for its highest-ranked candidate with the discounted return-to-go of the annotated
-      subtask, and the strips compare the decoded subtask with the annotation. Candidate paths are projected
-      from each arm’s end-effector pose into the base camera with a fixed calibration.</p>
   </div>
 </section>
 
