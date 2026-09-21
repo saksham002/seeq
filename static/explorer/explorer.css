@@ -1,9 +1,5 @@
-/* Header and text follow the rollout task blocks' left edge and sizes; with no score to make room
-   for, they run the full width of the 1280 px container. */
 #explorer > .media { max-width: 1280px; }
-#explorer > .media > h2 { margin: 0 0 12px; font-weight: 600; font-size: clamp(1.8rem, 2.5vw, 2.25rem); }
-#explorer > .media > .caption { margin: 12px 0 24px; max-width: none; font-size: 1.1rem; }
-#explorer .explorer-app { margin-top: 0; border: 1px solid var(--line); border-radius: 8px; background: var(--ground); padding: 16px; outline: none; }
+#explorer .explorer-app { margin-top: 24px; border: 1px solid var(--line); border-radius: 8px; background: var(--ground); padding: 16px; outline: none; }
 #explorer .explorer-app:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
 #explorer .explorer-loading { color: var(--muted); font-size: 0.9rem; margin: 0; }
 #explorer .explorer-grid { display: grid; grid-template-columns: minmax(0, 3fr) minmax(300px, 2fr); gap: 20px; align-items: start; }
