@@ -8,3 +8,7 @@ To restore: copy `index.html` back to the site root, move `static/explorer/` bac
 `static/`, and re-add `["explorer", null]` to the contents script's section list. The generator and
 inputs live in the main repository under `writing/website/scripts/prepare_explorer.py` and
 `writing/website/explorer/`.
+
+Note: this snapshot also carries the "current section" marker on the left, which was removed from
+the live page afterwards (it overlapped the text on small monitors); drop the `#toc-current` aside,
+its CSS and its script branch when restoring.

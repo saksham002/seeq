@@ -80,8 +80,7 @@
   b { font-weight: 600; }
   sub { font-size: 0.72em; }
 
-  /* Table of contents: fixed in the left margin until the rollouts heading scrolls into view; from
-     then on the same spot shows the current section (and task) instead. */
+  /* Table of contents: fixed in the left margin, hidden once the rollouts heading scrolls into view */
   .toc {
     position: fixed; left: clamp(16px, 2vw, 28px); top: 50%; transform: translateY(-50%);
     width: 244px; z-index: 10; font-size: 1.1rem; line-height: 1.45;
@@ -96,9 +95,6 @@
   .toc a { color: var(--nav-link); text-decoration: none; font-weight: 500; }
   .toc ol ol a { font-size: 0.98rem; font-weight: 400; }
   .toc a:hover { color: var(--nav-link-hover); }
-  .toc-current a { display: block; }
-  .toc-current a[hidden] { display: none; }
-  .toc-current .current-task { font-size: 0.98rem; font-weight: 400; margin: 8px 0 0 4px; padding-left: 12px; border-left: 1px solid var(--line); }
   @media (max-width: 1280px) { .toc { display: none; } }
 
   /* Hero */
@@ -229,11 +225,6 @@
     <li><a href="#results">Results</a></li>
     <li><a href="#bibtex">BibTeX</a></li>
   </ol>
-</aside>
-<aside class="toc toc-current hidden" id="toc-current" aria-label="Current section">
-  <div class="toc-title">Section</div>
-  <a class="current-section" href="#rollouts">Rollouts</a>
-  <a class="current-task" href="#shirt_hang" hidden>Hang a shirt</a>
 </aside>
 
 <header id="top">
@@ -378,43 +369,13 @@
 </footer>
 
 <script>
-  // The table of contents stays while the reader is above the rollouts and leaves as soon as the
-  // "Policy steering" heading enters the viewport; from then on the current section, and within the
-  // rollouts the current task, is shown in its place. "Current" is the last one whose top has
-  // passed 40% of the viewport height.
+  // The table of contents stays while the reader is above the rollouts and leaves as soon as
+  // the "Policy steering" heading enters the viewport.
   (function () {
     var toc = document.getElementById("toc");
-    var current = document.getElementById("toc-current");
-    var sectionLink = current.querySelector(".current-section");
-    var taskLink = current.querySelector(".current-task");
     var heading = document.querySelector("#rollouts h2");
-    var sections = [["tldr", "Summary"], ["rollouts", "Rollouts"], ["results", "Results"], ["bibtex", "BibTeX"]];
-    var tasks = [["shirt_hang", "Hang a shirt"], ["lid_sealing", "Seal a container with a lid"], ["packing", "Pack items into a box"], ["lego", "Take apart and sort Lego blocks"]];
-    function activeOf(items) {
-      var threshold = window.innerHeight * 0.4, active = null;
-      items.forEach(function (item) {
-        var element = document.getElementById(item[0]);
-        if (element && element.getBoundingClientRect().top <= threshold) active = item;
-      });
-      return active;
-    }
     function update() {
-      var listShown = heading.getBoundingClientRect().top >= window.innerHeight;
-      toc.classList.toggle("hidden", !listShown);
-      var section = activeOf(sections);
-      // The last section can never reach the threshold on a short tail, so the page bottom counts.
-      if (window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 2) section = sections[sections.length - 1];
-      current.classList.toggle("hidden", listShown || !section || !section[1]);
-      if (section && section[1]) {
-        sectionLink.textContent = section[1];
-        sectionLink.setAttribute("href", "#" + section[0]);
-      }
-      var task = section && section[0] === "rollouts" ? activeOf(tasks) : null;
-      taskLink.hidden = !task;
-      if (task) {
-        taskLink.textContent = task[1];
-        taskLink.setAttribute("href", "#" + task[0]);
-      }
+      toc.classList.toggle("hidden", heading.getBoundingClientRect().top < window.innerHeight);
     }
     update();
     window.addEventListener("scroll", update, { passive: true });
