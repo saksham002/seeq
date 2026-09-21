@@ -56,7 +56,7 @@ function makeChart(container, recording) {
     <defs><clipPath id="${clipId}"><rect x="${left}" y="${top}" width="${right - left}" height="${bottom - top}"/></clipPath></defs>
     ${horizontal}${ticks}
     <text class="axis-label" transform="translate(20 184) rotate(-90)" text-anchor="middle">Value</text>
-    <text class="axis-label" x="407" y="391" text-anchor="middle">Time without inference (s)</text>
+    <text class="axis-label" x="407" y="391" text-anchor="middle">Time (s)</text>
     <g clip-path="url(#${clipId})">
     <path class="value-path" d="${path}" fill="none" stroke="#6eb8a8" stroke-width="2.4" stroke-linejoin="round"/>
     <line class="cursor" x1="${left}" x2="${left}" y1="${top}" y2="${bottom}" stroke="#007f70" stroke-width="1.5" stroke-dasharray="5 5"/>
