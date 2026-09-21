@@ -2,6 +2,13 @@
 
 const tasks = window.SEEQ_ROLLOUTS;
 const rows = [];
+// How the base policy fails in each BC rollout, by task and episode number.
+const BC_FAILURES = {
+  shirt_hang: ["Unable to get hanger in first collar", "Unable to get hanger in second collar"],
+  lid_sealing: ["First flap pair not closed properly, causes lid to fall off", "Unable to close the second flap pair", "Lid placed poorly, unable to close first flap pair"],
+  packing: ["Unable to pick the Pringles bag up", "Knocks over the Cheez-It box and cannot recover"],
+  lego: ["Fails once on taking apart red block pair then mistakes it for a single block and puts it down", "Does not attempt taking the red block pair apart and places it on the mat"],
+};
 
 function makeVideo(recording, label) {
   const video = document.createElement("video");
@@ -86,7 +93,7 @@ function makeRow(task, pair) {
   element.setAttribute("aria-label", `${task.title}, episode ${pair.episode}`);
   element.innerHTML = `<div class="episode-top"><span class="episode-number">Episode ${pair.episode}</span></div>
     <div class="episode-grid">
-      <div class="bc-column"><div class="video-shell"></div></div>
+      <div class="bc-column"><div class="video-shell"></div><div class="subtask"><span class="subtask-label">BC Failure Mode</span><span class="subtask-text"></span></div></div>
       <div class="seeq-column"><div class="video-shell"></div><div class="subtask"><span class="subtask-label">Predicted Subtask</span><span class="subtask-text">—</span></div></div>
       <div class="chart-column"></div>
     </div>
@@ -94,11 +101,12 @@ function makeRow(task, pair) {
   const bc = makeVideo(pair.bc, `BC · ${task.title} · episode ${pair.episode}`);
   const seeq = makeVideo(pair.seeq, `SeeQ · ${task.title} · episode ${pair.episode}`);
   element.querySelector(".bc-column .video-shell").append(bc);
+  element.querySelector(".bc-column .subtask-text").textContent = BC_FAILURES[task.id][pair.episode - 1];
   element.querySelector(".seeq-column .video-shell").append(seeq);
   const videos = [bc, seeq];
   const durations = [pair.bc.duration, pair.seeq.duration];
   const master = durations[0] >= durations[1] ? bc : seeq;
-  const prediction = element.querySelector(".subtask-text");
+  const prediction = element.querySelector(".seeq-column .subtask-text");
   const status = element.querySelector(".playback-status");
   const drawChart = makeChart(element.querySelector(".chart-column"), pair.seeq);
   let frame = 0, playing = false, generation = 0;
