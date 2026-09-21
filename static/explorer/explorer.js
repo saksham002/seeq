@@ -663,6 +663,8 @@
       pause();
       seek(frame);
       mount.scrollIntoView({ block: "start" });
+      // Keyboard control listens on the explorer, so take focus from the link that was clicked.
+      mount.focus({ preventScroll: true });
     }
     document.addEventListener("click", (event) => {
       const link = event.target.closest("a[href^='#explorer-frame-']");
