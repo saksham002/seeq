@@ -19,6 +19,8 @@
     --accent: #1f7a4d;
     --base-bar: #c8c8c8;
     --slot: #ededed;
+    --nav-link: #1a73ff;
+    --nav-link-hover: #0b5ed7;
     --text-width: 720px;
     --media-width: 1040px;
     --gutter: clamp(20px, 4vw, 32px);
@@ -34,6 +36,8 @@
       --accent: #4fbf82;
       --base-bar: #3d3d3d;
       --slot: #1e1e1e;
+      --nav-link: #5aa9ff;
+      --nav-link-hover: #8cc4ff;
     }
   }
   :root[data-theme="dark"] {
@@ -46,6 +50,8 @@
     --accent: #4fbf82;
     --base-bar: #3d3d3d;
     --slot: #1e1e1e;
+    --nav-link: #5aa9ff;
+    --nav-link-hover: #8cc4ff;
   }
 
   * { box-sizing: border-box; }
@@ -86,8 +92,22 @@
     gap: clamp(12px, 2vw, 22px); height: 52px; font-size: 0.92rem; overflow-x: auto;
   }
   nav .brand { font-weight: 600; letter-spacing: -0.01em; margin-right: auto; text-decoration: none; white-space: nowrap; }
-  nav a:not(.brand) { color: var(--ink-2); text-decoration: none; white-space: nowrap; }
-  nav a:not(.brand):hover { color: var(--ink); }
+  nav a:not(.brand) { color: var(--nav-link); font-size: 1.05rem; font-weight: 500; text-decoration: none; white-space: nowrap; }
+  nav a:not(.brand):hover { color: var(--nav-link-hover); }
+  nav .menu { position: relative; display: flex; align-items: center; }
+  nav .menu > a { display: inline-flex; align-items: center; gap: 4px; }
+  nav .menu > a svg { width: 12px; height: 12px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+  nav .submenu {
+    position: absolute; top: calc(100% + 8px); left: -8px; z-index: 20; display: none;
+    margin: 0; padding: 6px 0; list-style: none; min-width: 260px;
+    background: var(--ground); border: 1px solid var(--line); border-radius: 8px; box-shadow: 0 10px 28px rgba(0, 0, 0, 0.14);
+  }
+  nav .submenu::before { content: ""; position: absolute; left: 0; right: 0; top: -9px; height: 9px; }
+  nav .menu:hover .submenu, nav .menu:focus-within .submenu { display: block; }
+  nav .submenu a { display: block; padding: 8px 14px; font-size: 0.95rem; font-weight: 500; }
+  nav .submenu a:hover { background: var(--panel); }
+  @media (min-width: 721px) { nav .row { overflow: visible; } }
+  @media (max-width: 720px) { nav .submenu, nav .menu > a svg { display: none !important; } }
 
   /* Hero */
   header { padding-top: clamp(36px, 5vw, 60px); }
@@ -209,7 +229,16 @@
   <div class="row">
     <a class="brand" href="#top">SeeQ</a>
     <a href="#tldr">Summary</a>
-    <a href="#rollouts">Rollouts</a>
+    <div class="menu">
+      <a href="#rollouts" aria-haspopup="true">Rollouts<svg viewBox="0 0 16 16" aria-hidden="true"><path d="m4 6 4 4 4-4"/></svg></a>
+      <ul class="submenu" aria-label="Rollout tasks">
+        <li><a href="#shirt_hang">Hang a shirt</a></li>
+        <li><a href="#lid_sealing">Seal a container with a lid</a></li>
+        <li><a href="#packing">Pack items into a box</a></li>
+        <li><a href="#lego">Take apart and sort Lego blocks</a></li>
+      </ul>
+    </div>
+    <a href="#explorer">Visualizer</a>
     <a href="#results">Results</a>
     <a href="#bibtex">BibTeX</a>
   </div>
