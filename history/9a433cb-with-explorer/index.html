@@ -211,6 +211,8 @@
 <link rel="stylesheet" href="static/rollouts/rollouts.css?v=2">
 <script defer src="static/rollouts/data.js?v=2"></script>
 <script defer src="static/rollouts/player.js?v=5"></script>
+<link rel="stylesheet" href="static/explorer/explorer.css?v=5">
+<script defer src="static/explorer/explorer.js?v=5"></script>
 </head>
 <body>
 
@@ -333,6 +335,28 @@
   </div>
 </section>
 
+<section id="explorer">
+  <div class="text">
+    <h2>Inspect SeeQ on a held-out demonstration</h2>
+    <p class="lead">This shirt-hang demonstration comes from the validation split and was never used to train SeeQ.
+      At every frame, SeeQ first decodes the active subtask in text and then scores eight action chunks sampled
+      from that state by the fine-tuned π<sub>0.5</sub> policy. Pause the video or drag along the timeline to
+      inspect a frame: each path shows where a candidate chunk would move the grippers over the next second,
+      and the panel ranks the candidates by Q-value. For a stretch where the base policy often struggles, look at
+      frames 1258 to 1358, while the second sleeve is being hooked onto the hanger:
+      <a href="#explorer-frame-1258">jump to frame 1258</a>.</p>
+  </div>
+  <div class="media">
+    <div class="explorer-app" id="explorer-app" data-src="static/explorer/data.json?v=5">
+      <p class="explorer-loading">Loading the explorer…</p>
+    </div>
+    <p class="caption">The trajectory is a held-out demonstration from the validation split. The value chart
+      compares SeeQ’s value for its highest-ranked candidate with the discounted return-to-go of the annotated
+      subtask, and the strips compare the decoded subtask with the annotation. Candidate paths are projected
+      from each arm’s end-effector pose into the base camera with a fixed calibration.</p>
+  </div>
+</section>
+
 <section id="results">
   <div class="text">
     <h2>Results</h2>
@@ -388,7 +412,8 @@
     var sectionLink = current.querySelector(".current-section");
     var taskLink = current.querySelector(".current-task");
     var heading = document.querySelector("#rollouts h2");
-    var sections = [["tldr", "Summary"], ["rollouts", "Rollouts"], ["results", "Results"], ["bibtex", "BibTeX"]];
+    // The explorer is not listed; while it is on screen the marker shows nothing.
+    var sections = [["tldr", "Summary"], ["rollouts", "Rollouts"], ["explorer", null], ["results", "Results"], ["bibtex", "BibTeX"]];
     var tasks = [["shirt_hang", "Hang a shirt"], ["lid_sealing", "Seal a container with a lid"], ["packing", "Pack items into a box"], ["lego", "Take apart and sort Lego blocks"]];
     function activeOf(items) {
       var threshold = window.innerHeight * 0.4, active = null;
