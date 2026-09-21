@@ -35,8 +35,12 @@
   }
 
   async function load() {
-    const data = await (await fetch(mount.dataset.src)).json();
-    const buffer = await (await fetch(data.paths.file)).arrayBuffer();
+    const source = new URL(mount.dataset.src, location.href);
+    const data = await (await fetch(source)).json();
+    // The binary is versioned with the same query as data.json so both refresh together.
+    const pathsUrl = new URL(data.paths.file, location.href);
+    pathsUrl.search = source.search;
+    const buffer = await (await fetch(pathsUrl)).arrayBuffer();
     return { data, paths: new Int16Array(buffer) };
   }
 
