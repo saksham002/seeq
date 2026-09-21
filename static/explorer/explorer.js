@@ -41,6 +41,11 @@
     const pathsUrl = new URL(data.paths.file, location.href);
     pathsUrl.search = source.search;
     const buffer = await (await fetch(pathsUrl)).arrayBuffer();
+    for (const key of ["src", "poster"]) {
+      const url = new URL(data.video[key], location.href);
+      url.search = source.search;
+      data.video[key] = url.href;
+    }
     return { data, paths: new Int16Array(buffer) };
   }
 
@@ -345,8 +350,6 @@
     // ------------------------------------------------------------------ state
     let currentFrame = -1;
     let playing = false;
-    let userPaused = false;
-    let inView = false;
     let animation = 0;
 
     function accentColor() {
@@ -570,13 +573,13 @@
     }
 
     function togglePlayback() {
-      if (playing) { userPaused = true; pause(); } else { userPaused = false; play(); }
+      if (playing) pause(); else play();
     }
 
     playButton.addEventListener("click", togglePlayback);
     stage.addEventListener("click", togglePlayback);
-    stepBack.addEventListener("click", () => { userPaused = true; pause(); seek(currentFrame - 1); });
-    stepForward.addEventListener("click", () => { userPaused = true; pause(); seek(currentFrame + 1); });
+    stepBack.addEventListener("click", () => { pause(); seek(currentFrame - 1); });
+    stepForward.addEventListener("click", () => { pause(); seek(currentFrame + 1); });
     speed.addEventListener("change", () => { video.playbackRate = Number(speed.value); });
     scrubber.addEventListener("input", () => seek(Number(scrubber.value)));
     video.addEventListener("seeked", () => { if (!playing) draw(frameFromVideo()); });
@@ -584,8 +587,8 @@
     mount.addEventListener("keydown", (event) => {
       if (event.target.tagName === "SELECT" || event.target.tagName === "INPUT") return;
       if (event.key === " ") { event.preventDefault(); togglePlayback(); }
-      else if (event.key === "ArrowLeft") { event.preventDefault(); userPaused = true; pause(); seek(currentFrame - 1); }
-      else if (event.key === "ArrowRight") { event.preventDefault(); userPaused = true; pause(); seek(currentFrame + 1); }
+      else if (event.key === "ArrowLeft") { event.preventDefault(); pause(); seek(currentFrame - 1); }
+      else if (event.key === "ArrowRight") { event.preventDefault(); pause(); seek(currentFrame + 1); }
       else if (event.key === "Home") { event.preventDefault(); seek(0); }
       else if (event.key === "End") { event.preventDefault(); seek(N - 1); }
     });
@@ -645,7 +648,7 @@
       if (!dragging) return;
       dragging = false;
       timelineSvg.releasePointerCapture(event.pointerId);
-      if (resumeAfterDrag && !userPaused) play();
+      if (resumeAfterDrag) play();
       if (event.pointerType === "touch") hideHover();
     };
     timelineSvg.addEventListener("pointerup", endDrag);
@@ -659,7 +662,6 @@
       return match ? Number(match[1]) - 1 : null;
     }
     function jumpToFrame(frame) {
-      userPaused = true;
       pause();
       seek(frame);
       mount.scrollIntoView({ block: "start" });
@@ -680,18 +682,16 @@
       if (frame !== null) jumpToFrame(frame);
     });
 
-    // Autoplay while the stage is on screen, unless the viewer paused it.
+    // The explorer never starts on its own: it waits, paused on frame 0, for play. A playing
+    // video is paused when it scrolls off screen or the tab is hidden, and stays paused.
     const observer = new IntersectionObserver((entries) => {
       for (const entry of entries) {
-        inView = entry.isIntersecting;
-        if (inView && !userPaused && !document.hidden) play();
-        else if (!inView && playing) pause();
+        if (!entry.isIntersecting && playing) pause();
       }
     }, { threshold: 0.35 });
     observer.observe(stage);
     document.addEventListener("visibilitychange", () => {
       if (document.hidden && playing) pause();
-      else if (!document.hidden && inView && !userPaused) play();
     });
 
     // Relayout on the next frame so the observer never sees sizes it changed itself.
