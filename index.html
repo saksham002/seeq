@@ -313,15 +313,13 @@
 </section>
 
 <section id="explorer">
-  <div class="text">
-    <h2>Inspect SeeQ on a held-out demonstration</h2>
-    <p class="lead">This shirt-hang demonstration comes from the validation split and was never used to train SeeQ.
+  <div class="media">
+    <div class="task-head"><h2>Inspect SeeQ on a held-out demonstration</h2></div>
+    <p class="caption">This shirt-hang demonstration comes from the validation split and was never used to train SeeQ.
       At every frame, SeeQ first decodes the active subtask in text and then scores eight action chunks sampled
       from that state by the fine-tuned π<sub>0.5</sub> policy. Pause the video or drag along the timeline to
       inspect a frame: each path shows where a candidate chunk would move the grippers over the next second,
       and the panel ranks the candidates by Q-value.</p>
-  </div>
-  <div class="media">
     <div class="explorer-app" id="explorer-app" data-src="static/explorer/data.json">
       <p class="explorer-loading">Loading the explorer…</p>
     </div>
